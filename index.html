@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Glow animation */
+        
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0px 10px rgba(255, 255, 255, 0.1), 0 0px 20px rgba(0, 0, 0, 0.1);
+            }
+            100% {
+                box-shadow: 0 0px 20px rgba(255, 255, 255, 0.2), 0 0px 30px rgba(0, 0, 0, 0.2);
+            }
+        }
+        
+        .hover-glow:hover {
+            animation: glow 0.5s ease-in-out forwards;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-900 text-gray-100">
+
+    <div id="pomodoro-app" class="bg-gradient-to-br from-indigo-900 to-purple-800 p-8 md:p-12 rounded-3xl shadow-2xl hover:shadow-4xl transition-shadow duration-500 w-full max-w-sm md:max-w-md text-center">
+
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-gray-100">Pomodoro Timer</h1>
+
+        <!-- Timer display -->
+        <div id="timer-display" class="text-6xl md:text-8xl font-bold mb-6 text-white bg-white bg-opacity-10 backdrop-filter backdrop-blur-sm rounded-xl py-8 px-4 border-2 border-indigo-300 border-opacity-20 shadow-inner">
+            25:00
+        </div>
+
+        <!-- Mode selection buttons -->
+        <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+            <button id="pomodoro-btn" class="mode-btn px-4 py-2 rounded-full font-semibold text-sm md:text-base transition-all duration-300 bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:scale-105 hover-glow">
+        Pomodoro
+      </button>
+            <button id="shortBreak-btn" class="mode-btn px-4 py-2 rounded-full font-semibold text-sm md:text-base transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:scale-105 hover-glow">
+        Short Break
+      </button>
+            <button id="longBreak-btn" class="mode-btn px-4 py-2 rounded-full font-semibold text-sm md:text-base transition-all duration-300 bg-teal-600 hover:bg-teal-700 text-white shadow-lg hover:scale-105 hover-glow">
+        Long Break
+      </button>
+        </div>
+
+        <!-- Timer control buttons -->
+        <div class="flex justify-center space-x-4 md:space-x-6">
+            <button id="start-btn" class="control-btn bg-green-500 hover:bg-green-600 text-white font-bold p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 hover-glow">
+        ▶
+      </button>
+            <button id="pause-btn" class="control-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 hover-glow">
+        ⏸
+      </button>
+            <button id="reset-btn" class="control-btn bg-red-500 hover:bg-red-600 text-white font-bold p-4 rounded-full shadow-lg hover:scale-110 transition-all duration-300 hover-glow">
+        ⟳
+      </button>
+        </div>
+    </div>
+
+    <script>
+        const timerDisplay = document.getElementById('timer-display');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const pomodoroBtn = document.getElementById('pomodoro-btn');
+        const shortBreakBtn = document.getElementById('shortBreak-btn');
+        const longBreakBtn = document.getElementById('longBreak-btn');
+
+        let interval;
+        let isPaused = true;
+        let timeRemaining = 25 * 60;
+        let currentMode = 'pomodoro';
+
+        const modes = {
+            pomodoro: 25 * 60,
+            shortBreak: 5 * 60,
+            longBreak: 15 * 60,
+        };
+
+        const updateDisplay = () => {
+            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+        };
+
+        const playSound = () => {
+            const audioContext = new(window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = 0.5;
+
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 440;
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1);
+        };
+
+        const countdown = () => {
+            if (timeRemaining > 0) {
+                timeRemaining--;
+                updateDisplay();
+            } else {
+                clearInterval(interval);
+                isPaused = true;
+                playSound();
+            }
+        };
+
+        startBtn.addEventListener('click', () => {
+            if (isPaused) {
+                isPaused = false;
+                interval = setInterval(countdown, 1000);
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            if (!isPaused) {
+                isPaused = true;
+                clearInterval(interval);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isPaused = true;
+            clearInterval(interval);
+            timeRemaining = modes[currentMode];
+            updateDisplay();
+        });
+
+        const switchMode = (mode) => {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('bg-opacity-80', 'ring-2', 'ring-white');
+            });
+
+            document.getElementById(`${mode}-btn`).classList.add('bg-opacity-80', 'ring-2', 'ring-white');
+
+            isPaused = true;
+            clearInterval(interval);
+            currentMode = mode;
+            timeRemaining = modes[mode];
+            updateDisplay();
+        };
+
+        pomodoroBtn.addEventListener('click', () => switchMode('pomodoro'));
+        shortBreakBtn.addEventListener('click', () => switchMode('shortBreak'));
+        longBreakBtn.addEventListener('click', () => switchMode('longBreak'));
+
+        window.addEventListener('load', () => {
+            updateDisplay();
+            switchMode('pomodoro');
+        });
+    </script>
+</body>
+
+</html>
