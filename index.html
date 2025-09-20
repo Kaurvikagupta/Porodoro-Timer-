@@ -7,26 +7,7 @@
     <title>Pomodoro Timer</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Glow animation */
-        
-        @keyframes glow {
-            0% {
-                box-shadow: 0 0px 10px rgba(255, 255, 255, 0.1), 0 0px 20px rgba(0, 0, 0, 0.1);
-            }
-            100% {
-                box-shadow: 0 0px 20px rgba(255, 255, 255, 0.2), 0 0px 30px rgba(0, 0, 0, 0.2);
-            }
-        }
-        
-        .hover-glow:hover {
-            animation: glow 0.5s ease-in-out forwards;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-900 text-gray-100">
@@ -67,103 +48,9 @@
         </div>
     </div>
 
-    <script>
-        const timerDisplay = document.getElementById('timer-display');
-        const startBtn = document.getElementById('start-btn');
-        const pauseBtn = document.getElementById('pause-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const pomodoroBtn = document.getElementById('pomodoro-btn');
-        const shortBreakBtn = document.getElementById('shortBreak-btn');
-        const longBreakBtn = document.getElementById('longBreak-btn');
-
-        let interval;
-        let isPaused = true;
-        let timeRemaining = 25 * 60;
-        let currentMode = 'pomodoro';
-
-        const modes = {
-            pomodoro: 25 * 60,
-            shortBreak: 5 * 60,
-            longBreak: 15 * 60,
-        };
-
-        const updateDisplay = () => {
-            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
-            const seconds = (timeRemaining % 60).toString().padStart(2, '0');
-            timerDisplay.textContent = `${minutes}:${seconds}`;
-        };
-
-        const playSound = () => {
-            const audioContext = new(window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            gainNode.gain.value = 0.5;
-
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 440;
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 1);
-        };
-
-        const countdown = () => {
-            if (timeRemaining > 0) {
-                timeRemaining--;
-                updateDisplay();
-            } else {
-                clearInterval(interval);
-                isPaused = true;
-                playSound();
-            }
-        };
-
-        startBtn.addEventListener('click', () => {
-            if (isPaused) {
-                isPaused = false;
-                interval = setInterval(countdown, 1000);
-            }
-        });
-
-        pauseBtn.addEventListener('click', () => {
-            if (!isPaused) {
-                isPaused = true;
-                clearInterval(interval);
-            }
-        });
-
-        resetBtn.addEventListener('click', () => {
-            isPaused = true;
-            clearInterval(interval);
-            timeRemaining = modes[currentMode];
-            updateDisplay();
-        });
-
-        const switchMode = (mode) => {
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('bg-opacity-80', 'ring-2', 'ring-white');
-            });
-
-            document.getElementById(`${mode}-btn`).classList.add('bg-opacity-80', 'ring-2', 'ring-white');
-
-            isPaused = true;
-            clearInterval(interval);
-            currentMode = mode;
-            timeRemaining = modes[mode];
-            updateDisplay();
-        };
-
-        pomodoroBtn.addEventListener('click', () => switchMode('pomodoro'));
-        shortBreakBtn.addEventListener('click', () => switchMode('shortBreak'));
-        longBreakBtn.addEventListener('click', () => switchMode('longBreak'));
-
-        window.addEventListener('load', () => {
-            updateDisplay();
-            switchMode('pomodoro');
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
+
+</html>
 
 </html>
